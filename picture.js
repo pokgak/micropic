@@ -13,18 +13,30 @@ const ACCEPTED_MIME_TYPES = [
 const uploadDir = 'uploads/'
 router.get('/:id', express.static(uploadDir))
 
-var checkFile = function (req, file, cb) {
-    console.log("checking file validity")
 
-    if (ACCEPTED_MIME_TYPES.includes(file.mimetype)) {
-        cb(null, true)
-    }
-    else {
-        cb(null, false)
-    }
-}
+
 var multer = require('multer')
-var upload = multer({ dest: uploadDir, fileFilter: checkFile })
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.originalname)
+    }
+})
+var upload = multer({
+    storage: storage,
+    fileFilter: function (req, file, cb) {
+        console.log("checking file validity")
+
+        if (ACCEPTED_MIME_TYPES.includes(file.mimetype)) {
+            cb(null, true)
+        }
+        else {
+            cb(null, false)
+        }
+    },
+})
 
 function getFilename () {
     return crypto.randomBytes(16).toString('hex')
