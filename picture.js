@@ -3,6 +3,8 @@ var crypto = require('crypto')
 var AdmZip = require('adm-zip')
 var express = require('express')
 var router = express.Router()
+const imageThumbnail = require('image-thumbnail')
+var sizeOf = require('image-size')
 
 const ACCEPTED_MIME_TYPES = [
     'image/jpeg',
@@ -42,8 +44,8 @@ function getFilename () {
     return crypto.randomBytes(16).toString('hex')
   }
 
-function extractZip (path) {
-    var urls = []
+function extractPaths (path) {
+    var paths = []
 
     var zip = new AdmZip(path)
     zip.getEntries().forEach(function (entry) {
@@ -51,9 +53,19 @@ function extractZip (path) {
             return
         }
         zip.extractEntryTo(entry, uploadDir, true, true)
-        urls.push('/' + uploadDir + entry.entryName)
+        paths.push(uploadDir + entry.entryName)
     })
-    return urls
+    return paths
+}
+
+function calculateThumbnailPercentage (dimensions) {
+    return (dimensions.width <= 128 && dimensions.height <= 128) ? 100 : parseInt((32 / dimensions.width) * 100)
+}
+
+function getThumbnail (path) {
+    var dimensions = sizeOf(path)
+    var options = { percentage: calculateThumbnailPercentage(dimensions), responseType: 'base64' }
+    return imageThumbnail(path, options)
 }
 
 router.post('/', upload.single('data'), function (req, res) {
@@ -61,16 +73,22 @@ router.post('/', upload.single('data'), function (req, res) {
         res.sendStatus(400).end()
     }
 
-    var urls = []
     if (req.file.mimetype === 'application/zip') {
-        urls = urls.concat(extractZip(req.file.path))
-    }
-    else {
-        urls.push('/' + uploadDir + req.file.filename)
+        var paths = extractPaths(req.file.path)
+    } else {
+        var paths = [uploadDir + req.file.filename]
     }
 
-    res.json({
-        'urls': urls
+    var pictures = paths.map(function (path) {
+        return new Promise((resolve, reject) => {
+            getThumbnail(path).then( thumbnail => resolve({
+                'url': '/' + path,
+                'thumbnail': thumbnail,
+            }))
+        })
+    })
+    Promise.all(pictures).then(function (results) {
+        return res.send(results)
     })
 })
 

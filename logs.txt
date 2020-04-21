@@ -7,3 +7,6 @@
 14:45 - continue
 15:30 - finish story 1
 17:14 - finish story 2.1
+      - break
+21:02 - continue
+22:59 - finish story 2.2
