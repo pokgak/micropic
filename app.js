@@ -4,7 +4,7 @@ const port = 3000
 
 var pictureController = require('./picture')
 
-app.get('/', (req, res) => res.send('Hello sdf!'))
+app.get('/', (req, res) => res.send('Microservice for uploading pictures!'))
 
 app.use('/picture', pictureController)
 
