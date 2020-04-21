@@ -2,26 +2,30 @@ var fs = require('fs')
 var express = require('express')
 var router = express.Router()
 
+const ACCEPTED_MIME_TYPES = [
+    'image/jpeg',
+    'image/png',
+]
+
 const uploadDir = 'uploads/'
 var checkFile = function (req, file, cb) {
     console.log("checking file validity")
-    cb(null, true)
+
+    if (!ACCEPTED_MIME_TYPES.includes(file.mimetype)) {
+        cb(null, true)
+    }
+    else {
+        cb(null, false)
+    }
 }
 var upload = require('multer')({ dest: uploadDir, fileFilter: checkFile })
 
-router.get('/:id', function (req, res, next) {
-    console.log('GET /picture id ' + req.params['id'])
-    next()
-},
-    express.static('uploads')
-)
+router.get('/:id', express.static('uploads'))
 
 router.post('/', upload.single('data'), function (req, res) {
     if (req.file === undefined) {
         res.sendStatus(400).end()
     }
-
-    console.log(req.file)
 
     res.json({
         'urls': [
