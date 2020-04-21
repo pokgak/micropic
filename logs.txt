@@ -1,0 +1,3 @@
+# Progress log
+
+12:32 - extract requirements from task description
