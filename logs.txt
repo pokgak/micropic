@@ -1,3 +1,5 @@
 # Progress log
 
 12:32 - extract requirements from task description
+12:41 - look around in express framework on how to do things
+13:05 - create design for the service
