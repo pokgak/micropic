@@ -1,36 +1,64 @@
 var fs = require('fs')
+var crypto = require('crypto')
+var AdmZip = require('adm-zip')
 var express = require('express')
 var router = express.Router()
 
 const ACCEPTED_MIME_TYPES = [
     'image/jpeg',
     'image/png',
+    'application/zip'
 ]
 
 const uploadDir = 'uploads/'
+router.get('/:id', express.static(uploadDir))
+
 var checkFile = function (req, file, cb) {
     console.log("checking file validity")
 
-    if (!ACCEPTED_MIME_TYPES.includes(file.mimetype)) {
+    if (ACCEPTED_MIME_TYPES.includes(file.mimetype)) {
         cb(null, true)
     }
     else {
         cb(null, false)
     }
 }
-var upload = require('multer')({ dest: uploadDir, fileFilter: checkFile })
+var multer = require('multer')
+var upload = multer({ dest: uploadDir, fileFilter: checkFile })
 
-router.get('/:id', express.static('uploads'))
+function getFilename () {
+    return crypto.randomBytes(16).toString('hex')
+  }
+
+function extractZip (path) {
+    var urls = []
+
+    var zip = new AdmZip(path)
+    zip.getEntries().forEach(function (entry) {
+        if (entry.isDirectory) {
+            return
+        }
+        zip.extractEntryTo(entry, uploadDir, true, true)
+        urls.push('/' + uploadDir + entry.entryName)
+    })
+    return urls
+}
 
 router.post('/', upload.single('data'), function (req, res) {
     if (req.file === undefined) {
         res.sendStatus(400).end()
     }
 
+    var urls = []
+    if (req.file.mimetype === 'application/zip') {
+        urls = urls.concat(extractZip(req.file.path))
+    }
+    else {
+        urls.push('/' + uploadDir + req.file.filename)
+    }
+
     res.json({
-        'urls': [
-            '/' + uploadDir + req.file.filename,
-        ]
+        'urls': urls
     })
 })
 
