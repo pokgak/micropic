@@ -29,6 +29,7 @@ What is done:
 Not done:
 
 - Testing
+- generate multiple thumbnail (only 32px are generated)
 
 ## Testing Ideas
 
