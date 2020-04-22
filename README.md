@@ -2,7 +2,7 @@
 
 Chosen microframework: ExpressJS
 
-Requirements: a directory `uploads/`, where the service is started.
+Requirements: a directory `uploads/`, where the service is started. Run `node app.js` to start the service.
 
 The API:
 
@@ -23,6 +23,7 @@ What is done:
     - return permanent link for each of the picture
 - Story 2.2:
     - generate thumbnail for images bigger than 128px by 128px
+    - thumbnail encoded as base64 in JSON response
     - thumbnails respect the uploaded image aspect ratio
 
 Not done:
