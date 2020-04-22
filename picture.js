@@ -53,7 +53,7 @@ function extractPaths (path) {
             return
         }
         zip.extractEntryTo(entry, uploadDir, true, true)
-        paths.push(uploadDir + entry.entryName)
+        paths.push(entry.entryName)
     })
     return paths
 }
@@ -74,15 +74,15 @@ router.post('/', upload.single('data'), function (req, res) {
     }
 
     if (req.file.mimetype === 'application/zip') {
-        var paths = extractPaths(req.file.path)
+        var filenames = extractPaths(req.file.path)
     } else {
-        var paths = [uploadDir + req.file.filename]
+        var filenames = [req.file.filename]
     }
 
-    var pictures = paths.map(function (path) {
+    var pictures = filenames.map(function (filename) {
         return new Promise((resolve, reject) => {
-            getThumbnail(path).then( thumbnail => resolve({
-                'url': '/' + path,
+            getThumbnail(uploadDir + filename).then( thumbnail => resolve({
+                'url': '/picture/' + filename,
                 'thumbnail': thumbnail,
             }))
         })
